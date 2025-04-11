@@ -497,7 +497,7 @@
                     case 'gemini': {
                         const apiKey = fetch('/api/gconfig')
                             .then(res => res.json())
-                            .then(data => data.secret);
+                            .then(data => console.log(data.secret));
                         const model = 'gemini-2.0-flash'; // Or another Gemini model
                         return await callGeminiAPI(apiKey, model, messages, options);
                     }
