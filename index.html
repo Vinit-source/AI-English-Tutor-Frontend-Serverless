@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+
+        .checklist ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            margin-bottom: 10px;
+        }
+
+        .checklist input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .checklist label {
+            cursor: pointer;
+        }
+    </style>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="bg-gray-100">
+    <div class="max-w-md mx-auto" id="main">
+        <div id="overlay"></div>
+        <!-- Header with tabs -->
+        <div class="text-center my-3">
+            <h1 class="text-2xl font-bold text-gray-800">AI English Tutor</h1>
+        </div>
+        <div class="flex justify-between bg-white p-4 rounded-t-lg shadow">
+            <div class="font-semibold text-gray-800">Roleplay</div>
+            <select id="language-select" class="language-select" required>
+                <option value="none" disabled selected>Your language</option>
+                <option value="hindi" selected>Hindi</option>
+                <option value="marathi">Marathi</option>
+                <option value="gujarati">Gujarati</option>
+                <option value="bengali">Bengali</option>
+                <option value="tamil">Tamil</option>
+                <option value="telugu">Telugu</option>
+                <option value="kannada">Kannada</option>
+                <option value="malayalam">Malayalam</option>
+            </select>
+
+        </div>
+
+        <!-- Cards container -->
+        <div class="grid grid-cols-2 gap-2 bg-white p-4 shadow card-container" id="card-container">
+            <!-- Over a phone call -->
+            <div class="flex flex-col items-center p-2 card">
+                <img src="assets/img/Young adult on a phone call.png" alt="Young adult on a phone call" class="mb-1">
+                <span class="text-xs text-center">Over a phone call</span>
+                <!-- <span class="text-xs bg-green-200 text-green-800 px-2 py-1 rounded-full mt-1">FREE</span> -->
+            </div>
+
+            <!-- Restaurant scene -->
+            <div class="flex flex-col items-center p-2 card">
+                <img src="assets/img/Young adult conversing with a waiter.png"
+                    alt="Young adult conversing with a waiter.png" class="mb-1">
+                <span class="text-xs text-center">At a restaurant</span>
+            </div>
+
+            <!-- At a Nike store -->
+            <div class="flex flex-col items-center p-2 card">
+                <img src="https://placehold.co/50x50" alt="Image of a sneaker, symbolizing a situation at a Nike store"
+                    class="mb-1">
+                <span class="text-xs text-center">At a Nike store</span>
+            </div>
+
+            <!-- At a coffee shop -->
+            <div class="flex flex-col items-center p-2 card">
+                <img src="https://placehold.co/50x50"
+                    alt="Picture of a coffee cup, indicating a setting at a coffee shop" class="mb-1">
+                <span class="text-xs text-center">At a coffee shop</span>
+            </div>
+
+            <!-- First day of class -->
+            <div class="flex flex-col items-center p-2 card">
+                <img src="https://placehold.co/50x50"
+                    alt="Icon of a male student, denoting the First day of class scenario" class="mb-1">
+                <span class="text-xs text-center">First day of class</span>
+            </div>
+
+            <!-- Birthday at a Spanish restaurant -->
+            <div class="flex flex-col items-center p-2 card">
+                <img src="https://placehold.co/50x50"
+                    alt="Icon of a paella dish, depicting a Birthday at a Spanish restaurant" class="mb-1">
+                <span class="text-xs text-center">Birthday at a Spanish restaurant</span>
+                <!-- <span class="text-xs bg-red-200 text-red-800 px-2 py-1 rounded-full mt-1">1</span> -->
+            </div>
+        </div>
+
+        <!--  Bottom Navigation 
+        <div class="flex justify-between bg-white p-4 rounded-b-lg mt-2 shadow">
+            <i class="fas fa-home fa-lg text-gray-800"></i>
+            <i class="fas fa-book-open fa-lg text-gray-400"></i>
+            <i class="fas fa-save fa-lg text-gray-400"></i>
+            <i class="fas fa-trophy fa-lg text-gray-400"></i>
+            <i class="fas fa-user fa-lg text-gray-400"></i>
+        </div> -->
+    </div>
+
+    <div id="chat-container" class="chat-container">
+        <div class="chat-header">
+            <span class="chat-title">Over a phone call</span>
+
+            <select id="llm-model" class="llm-model" required>
+                <option value="none" disabled selected>LLM Model</option>
+                <option value="mistral">Mistral</option>
+                <option value="gemini" selected>Gemini</option>
+                <option value="deepseek">Deepseek</option>
+                <option value="nemotron">NVIDIA Nemotron</option>
+            </select>
+            <button id="objectives-btn" class="objectives-btn">☰</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <canvas id="chatCanvas"></canvas>
+            <!-- Chat messages go here -->
+        </div>
+        <div class="chat-input-container">
+            <input id="chat-input" type="text" placeholder="Type a message...">
+            <button id="send-button">Send</button>
+        </div>
+
+        <div class="max-w-md mx-auto mt-8 objectives-panel" id="objectives-panel">
+            <div class="bg-white p-4 rounded-lg shadow">
+                <div class="objective-header">
+                    <span class="font-semibold text-lg text-gray-800">Over a phone call</span>
+                    <button id="close-btn" class="close-btn">✕</button>
+                </div>
+                <div class="mt-4">
+                    <h3 class="text-sm font-semibold text-gray-800">Scenario</h3>
+                    <p class="text-sm text-gray-600 mt-1">You are calling your friend in Chennai, curious about their
+                        well-being, work life, and upcoming weekend getaway plans.</p>
+                </div>
+                <div class="mt-4 checklist">
+                    <h3 class="text-sm font-semibold text-gray-800">Objectives</h3>
+                    <ul class="list-disc list-inside text-sm text-gray-600 mt-1" id="checklistItems">
+                        <li><input type="checkbox" id="item1"><label for="item1">Ask how is your friend doing</label>
+                        </li>
+                        <li><input type="checkbox" id="item2"><label for="item2">Ask how is everyone at his home</label>
+                        </li>
+                        <li><input type="checkbox" id="item3"><label for="item3">Ask how is his work pressure</label>
+                        </li>
+                        <li><input type="checkbox" id="item4"><label for="item4">Ask about his holiday plans for the
+                                weekend</label></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // ====================== VIEW ========================
+
+        // Simulate opening the chat interface when a card is clicked
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function () {
+                const chatContainer = document.getElementById('chat-container')
+                chatContainer.style.display = 'flex';
+                chatContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+                chatContainer.style.backdropFilter = 'blur(10px)';
+            });
+        });
+
+        // Function to hide the Chat Interface
+        const mainContainer = document.getElementById('main');
+        const hideChatInterface = async () => {
+            document.getElementById('chat-container').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+
+        // Toggle Behaviour for the objectives
+        document.addEventListener('DOMContentLoaded', () => {
+            const checklist = document.getElementById('checklistItems');
+
+            checklist.addEventListener('change', (event) => {
+                if (event.target.tagName === 'INPUT' && event.target.type === 'checkbox') {
+                    const label = event.target.nextElementSibling;
+                    if (event.target.checked) {
+                        label.style.textDecoration = 'line-through';
+                        label.style.color = '#999';
+                    } else {
+                        label.style.textDecoration = 'none';
+                        label.style.color = '#000';
+                    }
+                }
+            });
+        });
+
+        // Objectives panel
+        document.getElementById('objectives-btn').addEventListener('click', function () {
+            var objectivesPanel = document.getElementById('objectives-panel');
+            objectivesPanel.style.display = objectivesPanel.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Close the objectives panel
+        document.getElementById('close-btn').addEventListener('click', function () {
+            var objectivesPanel = document.getElementById('objectives-panel');
+            objectivesPanel.style.display = 'none';
+        })
+
+        // Chat interface - send message in the chat window
+        // Get the necessary elements
+        const chatMessagesDiv = document.querySelector('.chat-messages');
+        const sendButton = document.querySelector('#send-button');
+        const chatInput = document.querySelector('#chat-input');
+        const userLanguage = document.getElementById('language-select').value;
+        const llmModel = document.getElementById('llm-model').value;
+        console.log("User Language:", userLanguage);
+        console.log("LLM Model:", llmModel);
+
+        // Function to add the chat message to the chat messages div
+        function addChatMessage(chatText, sender) {
+            console.log("Adding message:", chatText, "Sender:", sender); // Check what's being added
+            // Create a new chat message element
+            var newChatMessage = document.createElement('div');
+            newChatMessage.classList.add(sender === 'user' ? 'user-message' : 'ai-message');
+
+            if (sender === 'user') {
+                newChatMessage.textContent = chatText;
+            } else {
+
+                console.log("ChatText:" + chatText);
+
+                const regex = /\((.*?)\)/g;
+
+                let tamilText = "";
+                let matches;
+                while ((matches = regex.exec(chatText)) !== null) {
+                    tamilText += matches[1] + " ";
+                }
+                // Removing the substrings from the original string
+                const englishText = chatText.replace(regex, "").trim();
+
+
+                // Add English message and append to ai-message
+                var englishMessage = document.createElement('div');
+                englishMessage.textContent = englishText; // Use '=' instead of '()'
+
+                // Style the English message (optional)
+                englishMessage.style.display = 'flex';
+                englishMessage.style.justifyContent = 'space-between';
+                englishMessage.style.alignItems = 'center';
+
+                // Create the hint icon button
+                var hintButton = document.createElement('button');
+                hintButton.innerHTML = '💡'; // Using a bulb emoji as an example icon
+                hintButton.style.marginLeft = '10px';
+
+                // Append the hint button to the English message div
+                englishMessage.appendChild(hintButton);
+
+                // Append to new chat message
+                newChatMessage.appendChild(englishMessage);
+
+                // Add Tamil message and append to ai-message
+                var tamilMessage = document.createElement('div');
+                tamilMessage.classList.add('ai-tamil-message');
+                tamilMessage.textContent = tamilText;
+                console.log("Outer:");
+                console.log(tamilText);
+                console.log(tamilMessage);
+                newChatMessage.appendChild(tamilMessage);
+
+                hintButton.addEventListener('click', (event) => {
+                    console.log("Inner:");
+                    console.log(tamilMessage);
+                    tamilMessage.style.display = tamilMessage.style.display === 'none' ? 'block' : 'none';
+                })
+            }
+
+            // Append the new chat message element to the chat-messages div
+            chatMessagesDiv.appendChild(newChatMessage);
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
+
+
+        // =========================== CONTROLLER ========================
+        // Function to send a message
+        const sendMessage = async () => {
+            const message = chatInput.value.trim();
+            if (message === '') return;
+
+            // Display the user's message
+            addChatMessage(message, 'user');
+            chatInput.value = '';
+
+            // Send the message to the AI and get the response
+            try {
+                // Get and display the AI response
+                const response = await getAIResponse(message, userLanguage, llmModel);
+                console.log("AI Response:", response);
+                addChatMessage(response, 'ai'); // Ensure this function correctly displays the message
+            } catch (error) {
+                console.error('Error getting AI response:', error);
+            }
+        };
+
+        // Function to get a response from LLM
+        const getAIResponse = async (message, userLanguage, llmModel) => {
+            if (getConversationLength() === 0) {
+                // Add the system prompt and user message to the conversation
+                configureScenario();
+            }
+
+            // Append the new user message to the conversation history.
+            addMessageToConversation('user', message);
+            
+            try {
+                // Call the LLM API with the conversation history
+                const response = await callLLM(llmModel, conversation);
+                console.log("Response from LLM:", response);
+            } catch (error) {
+                console.error('Error calling LLM:', error);
+            }
+            
+            addMessageToConversation('model', response);
+            
+            // Increment the message count (each user message and assistant reply are counted).
+            incrementMessageCount(2) // 1 for user message and 1 for assistant reply
+
+            // Mark objective as completed 
+            modifiedResponse = markComplete(response);
+
+            // Return the modified response
+            return modifiedResponse.trim();
+        };
+
+        // Marks the objectives as complete when objective no. appears in AI's message.
+        // Extracts the objective nos. and return the proper message as `modifiedResponse`.
+        function markComplete(response) {
+
+            // Regular expression for finding [digit] patterns
+            const regex = /\s?\[\d+\]/g;
+
+            // Extracting the substrings
+            const matches = response.match(regex) || [];
+
+            // Removing the substrings from the original string
+            const modifiedResponse = response.replace(regex, "");
+
+            // Get objective
+            const ul = document.getElementById('checklistItems');
+            const liArray = Array.from(ul.querySelectorAll('li'));
+            // Iterate over the matches array
+            matches.forEach(match => {
+                // Extract the number from the string, removing spaces and brackets
+                const matchNumber = match.match(/\d+/)[0];
+
+                // Construct the checkbox's id based on the extracted number
+                const checkboxId = `item${matchNumber}`;
+
+                // Get the checkbox element
+                const checkbox = document.getElementById(checkboxId);
+
+                // Check if the checkbox exists
+                if (checkbox) {
+                    // Mark the checkbox as checked
+                    checkbox.checked = true;
+                }
+            })
+
+            // Return the proper string
+            return modifiedResponse;
+        }
+
+
+        function askAI(message, userLanguage, llmModel) {
+            return new Promise((resolve, reject) => {
+                fetch('http://127.0.0.1:3000/scenario/over-a-phone-call', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message, language: userLanguage, model: llmModel }),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const messages = data.reply;
+                        // const foundAssistantMessage = messages.data.find(obj => obj.role === "assistant");
+                        // Temporary fix for the issue of find function not able to find assistant
+                        const foundAssistantMessage = messages;
+                        console.log(foundAssistantMessage);
+
+                        // Resolve the promise with the reply
+                        // if (foundAssistantMessage.content.length === 1) {
+                        //     resolve(foundAssistantMessage.content[0].text.value);
+                        // } else {
+                        //     resolve(foundAssistantMessage.content[0].text.value + foundAssistantMessage.content[1].text.value);
+                        // }
+
+                        // Resolving for Mistral
+                        resolve(foundAssistantMessage);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        reject(error); // Reject the promise on error
+                    });
+            });
+        }
+
+
+        // Event listeners for sending messages
+        sendButton.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Add Event Listeners to hide the chat interface
+        chatInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                hideChatInterface();
+            }
+        });
+
+        //  =============================== MODEL ==================================
+
+        // Global conversation state (client-side)
+        let conversation = [];
+        const messageLimit = 20; // Maximum messages allowed before conversation is ended
+        let messageCount = 0;
+
+
+        function addMessageToConversation(role, content) {
+            conversation.push({ role: role, content: content });
+        }
+
+        // Getters and setters for model variables
+        function getConversation() {
+            return conversation;
+        }
+
+        function getConversationLength() {
+            return conversation.length;
+        }
+
+        function getMessageCount() {
+            return messageCount;
+        }
+        
+        function getMessageLimit() {
+            return messageLimit;
+        }
+
+        function incrementMessageCount(value) {
+            messageCount += value;
+        }
+
+        function setMessageLimit(limit) {
+            messageLimit = limit;
+        }
+
+        function clearConversation() {
+            conversation = [];
+            messageCount = 0;
+        }
+
+        async function callLLM(provider, messages, options = {}) {
+            if (getMessageCount() >= getMessageLimit()) {
+                    return "I'm sorry we have exceeded the message limit for this conversation. Let us stop the conversation here. Good Bye!";
+                }
+
+            try {
+                switch (provider.toLowerCase()) {
+                    case 'mistral': {
+                        const apiKey = process.env.MISTRAL_API_KEY;
+                        const model = 'open-mistral-nemo'; // Or another Mistral model
+                        return await callMistralAPI(apiKey, model, messages, options);
+                    }
+                    case 'openai': {
+                        const apiKey = process.env.OPENROUTER_API_KEY;
+                        const model = 'gpt-3.5-turbo'; // Or another OpenAI model
+                        return await callOpenAIAPI(apiKey, model, messages, options);
+                    }
+                    case 'gemini': {
+                        const apiKey = process.env.GEMINI_API_KEY;
+                        const model = 'gemini-2.0-flash'; // Or another Gemini model
+                        return await callGeminiAPI(apiKey, model, messages, options);
+                    }
+                    case 'deepseek': {
+                        const apiKey = process.env.OPENROUTER_API_KEY;
+                        const model = 'deepseek/deepseek-r1:free'; // Or another model
+                        return await callOpenRouterAPI(apiKey, model, messages, options);
+                    }
+                    case 'nemotron': {
+                        const apiKey = process.env.OPENROUTER_API_KEY;
+                        const model = 'nvidia/llama-3.1-nemotron-nano-8b-v1:free';
+                        return await callOpenRouterAPI(apiKey, model, messages, options);
+                    }
+                    default:
+                        throw new Error(`Unsupported provider: ${provider}`);
+                }
+            } catch (error) {
+                console.error(`Error calling ${provider} API:`, error.response ? error.response.data : error.message);
+                throw error;
+            }
+        }
+
+        async function callMistralAPI(apiKey, model, messages, options = {}) {
+            try {
+                const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ model, messages, ...options }),
+                });
+
+                if (!response.ok) {
+                    // Handle HTTP errors (e.g., 400, 500)
+                    const errorData = await response.json();
+                    throw new Error(`Mistral API error: ${response.status} - ${errorData.error || response.statusText}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('Error calling Mistral API:', error);
+                throw error;
+            }
+        }
+
+        async function callOpenAIAPI(apiKey, model, messages, options = {}) {
+            try {
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ model, messages, ...options }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`OpenAI API error: ${response.status} - ${errorData.error || response.statusText}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('Error calling OpenAI API:', error);
+                throw error;
+            }
+        }
+
+        async function callGeminiAPI(apiKey, model, messages, options = {}) {
+            try {
+                const parts = messages.map((msg) => ({ text: msg.content }));
+
+                const payload = {
+                    contents: {
+                        parts: parts,
+                    },
+                    ...options,
+                };
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Gemini API error: ${response.status} - ${errorData.error || response.statusText}`);
+                }
+
+                const data = await response.json();
+                return data.candidates &&
+                    data.candidates[0] &&
+                    data.candidates[0].content &&
+                    data.candidates[0].content.parts &&
+                    data.candidates[0].content.parts[0]
+                    ? data.candidates[0].content.parts[0].text
+                    : 'No valid response received from Gemini.';
+            } catch (error) {
+                console.error('Error calling Gemini API:', error);
+                throw error;
+            }
+        }
+
+        async function callOpenRouterAPI(apiKey, model, messages, options = {}) {
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ model, messages, ...options }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`OpenRouter API error: ${response.status} - ${errorData.error || response.statusText}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (error) {
+                console.error('Error calling OpenRouter API:', error);
+                throw error;
+            }
+        }
+
+        async function configureScenario(userMessage, userLanguage) {
+                // Add the system prompt only once at the beginning
+                if (getConversationLength === 0) {
+                    
+                    const scenarioInstructions = `
+            **Core Task:** Simulate a friendly, conversational English tutor on a phone call with an Indian student whose native language is ${userLanguage}.
+
+            **Primary Goal:** Guide the student to naturally and correctly ask the following four questions during the conversation. These are your key conversational objectives:
+
+            1.  **Objective 1:** Student asks how you (the tutor) are doing. (Target phrase examples: "How are you?", "How are you doing?")
+            2.  **Objective 2:** Student asks about the well-being of your family or people at home. (Target phrase examples: "How is your family?", "How is everyone at home?")
+            3.  **Objective 3:** Student asks about your current work pressure or workload. (Target phrase examples: "How is work?", "Is work busy?", "How is your work pressure?")
+            4.  **Objective 4:** Student asks about your plans for the upcoming weekend holiday. (Target phrase examples: "What are your plans for the weekend?", "Do you have any plans for the holiday?")
+
+            **Persona:** Friendly, patient, encouraging, and slightly guiding English tutor. Maintain a natural, conversational phone call style.
+
+            **Interaction Protocol:**
+
+            1.  **Initiation:** Start the conversation with a warm, natural phone greeting (e.g., "Hi [Student's Name, if known, otherwise 'there']! How's it going?").
+            2.  **Guidance:** Actively steer the conversation towards topics that create natural opportunities for the student to ask the objective questions. *Do not explicitly ask the student to ask these questions*. Instead, subtly introduce related themes (e.g., mention your work briefly, talk about the upcoming weekend).
+            3.  **Listening & Evaluation:** Pay close attention to the student's utterances.
+            4.  **Handling Correct Objective Achievement:**
+                * If the student asks one of the objective questions using grammatically correct and natural-sounding English:
+                    * First, respond *only* with the corresponding objective number in square brackets (e.g., [1]).
+                    * Then, *immediately* continue the conversation by naturally answering their question and perhaps asking a follow-up question to keep the dialogue flowing.
+            5.  **Handling Grammatical Errors/Incorrect Formation:**
+                * If the student makes *any* grammatical mistake or uses awkward sentence structure (whether attempting an objective question or just chatting):
+                    * **Do not** acknowledge any objective achievement, even if the intent is clear.
+                    * Politely and gently point out the specific error. Avoid judgmental language. (e.g., "That's very close! Just a small tip...")
+                    * Clearly provide the corrected sentence or phrase.
+                    * Explicitly ask the student to try saying the corrected version. (e.g., "Could you try saying: '[Corrected Sentence]'?")
+                    * **Crucially:** End your turn here. Your *only* task now is to wait for the student's next input, which should be their attempt at repetition.
+            6.  **Evaluating the Repetition Attempt:**
+                * On your very next turn *after* requesting a repetition:
+                    * **If the student repeats correctly:** Offer positive reinforcement (e.g., "Perfect!", "That's exactly right!"). *Then*, check if this corrected sentence now fulfills one of the objectives. If yes, respond with [#] and answer the question as described in step 4. If no (it was just a general chat correction), simply continue the conversation naturally.
+                    * **If the student repeats incorrectly:** Offer gentle encouragement (e.g., "Almost there! Remember it's '[Corrected Sentence]'."). *Do not* get stuck in a correction loop. Move the conversation forward naturally from this point, perhaps changing the topic slightly. Do not mark the objective.
+            7.  **State Management:** Internally track which objectives (1-4) have been successfully completed. Continue guiding the conversation until all objectives are met or the conversation reaches a natural end.
+            8.  **Contextual Awareness:** Remember the current time is Friday evening in Mumbai, India. This context is relevant for discussing work pressure (end of the week) and weekend plans.
+
+            **Output Format:**
+            * Your entire response MUST be in English first.
+            * Immediately following the English text, provide a *literal, word-for-word translation* of the English response into ${userLanguage} , enclosed in parentheses (). Maintain this format strictly for every turn.
+
+            **Example 1: Grammar Correction (in English)**
+
+            * *You:* ...So, work was quite busy this week, glad it's Friday! (...तो, इस हफ़्ते काम काफ़ी व्यस्त था, शुक्र है कि शुक्रवार है!)
+            * *Student:* How is your work pressure is?
+            * *You:* That's a great question! We just need a small adjustment. Usually, we say "How is your work pressure?" or "What is your work pressure like?". Could you try saying: "How is your work pressure?" (यह एक बढ़िया सवाल है! हमें बस एक छोटा सा समायोजन करने की आवश्यकता है। आमतौर पर, हम कहते हैं "How is your work pressure?" या "What is your work pressure like?"। क्या आप कह कर कोशिश कर सकते हैं: "How is your work pressure?")
+            * *Student (Next Turn):* How is your work pressure?
+            * *You:* [3] Excellent! Thanks for asking. It was quite high this week, lots of deadlines, but it should be calmer next week. How was your week? ([3] बहुत बढ़िया! पूछने के लिए धन्यवाद। इस हफ़्ते यह काफ़ी ज़्यादा था, बहुत सारी समय-सीमाएँ थीं, लेकिन अगले हफ़्ते शांत होना चाहिए। आपका हफ़्ता कैसा था?)
+            
+            * **Example 2: Student Uses Native Language**
+
+            * *You:* The weekend is almost here, thankfully! It being Friday evening in Mumbai already, I'm starting to think about relaxing. (शुक्र है, वीकेंड लगभग आ ही गया है! मुंबई में पहले से ही शुक्रवार की शाम होने के कारण, मैं आराम करने के बारे में सोचना शुरू कर रहा हूँ।)
+            * *Student:* वीकेंड के क्या प्लान हैं? (${userLanguage} phrase meaning "What are the plans for the weekend?")
+            * *You:* Ah, I see you're asking about my weekend plans! Let's try that in English for practice. You can ask: "What are your plans for the weekend?". Could you try saying that? (आह, मैं देख रहा हूँ कि आप मेरे वीकेंड प्लान्स के बारे में पूछ रहे हैं! अभ्यास के लिए इसे अंग्रेज़ी में आज़माते हैं। आप पूछ सकते हैं: "What are your plans for the weekend?"। क्या आप वह कह कर कोशिश कर सकते हैं?)
+            * *Student (Next Turn):* What are your plans for the weekend?
+            * *You:* [4] Great question! Since it's Friday evening, I'm thinking of just relaxing tomorrow, maybe reading a book. Nothing too exciting! What about you? Any plans? ([4] बढ़िया सवाल! चूँकि शुक्रवार की शाम है, मैं कल बस आराम करने की सोच रहा हूँ, शायद कोई किताब पढूँ। कुछ ज़्यादा रोमांचक नहीं! आपके बारे में क्या? कोई योजनाएँ?)
+
+            **Start the conversation now by initiating the call.**
+        `
+                    addMessageToConversation('system', scenarioInstructions);
+                }
+        }
+
+    </script>
+    <script src="scripts.js"></script>
+</body>
+
+
+</html>
