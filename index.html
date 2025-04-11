@@ -485,13 +485,15 @@
                 return "I'm sorry we have exceeded the message limit for this conversation. Let us stop the conversation here. Good Bye!";
             }
 
+            let apiKey = ''; // Initialize apiKey variable
+
             try {
                 switch (provider.toLowerCase()) {
                     case 'mistral': {
                         fetch('/api/mconfig')
                             .then(res => res.json())
                             .then(data => {
-                                const apiKey = data.secret;
+                                apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
                             })
                             .catch(err => {
@@ -504,7 +506,7 @@
                         fetch('/api/gconfig')
                         .then(res => res.json())
                             .then(data => {
-                                const apiKey = data.secret;
+                                apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
                             })
                             .catch(err => {
@@ -517,7 +519,7 @@
                         fetch('/api/orconfig')
                         .then(res => res.json())
                             .then(data => {
-                                const apiKey = data.secret;
+                                apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
                             })
                             .catch(err => {
@@ -530,7 +532,7 @@
                         fetch('/api/orconfig')
                         .then(res => res.json())
                             .then(data => {
-                                const apiKey = data.secret;
+                                apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
                             })
                             .catch(err => {
