@@ -322,25 +322,26 @@
 
             // Append the new user message to the conversation history.
             addMessageToConversation('user', message);
-            
+
             try {
                 // Call the LLM API with the conversation history
                 const response = await callLLM(llmModel, conversation);
                 console.log("Response from LLM:", response);
+
+
+                addMessageToConversation('model', response);
+
+                // Increment the message count (each user message and assistant reply are counted).
+                incrementMessageCount(2) // 1 for user message and 1 for assistant reply
+
+                // Mark objective as completed 
+                modifiedResponse = markComplete(response);
+
+                // Return the modified response
+                return modifiedResponse.trim();
             } catch (error) {
                 console.error('Error calling LLM:', error);
             }
-            
-            addMessageToConversation('model', response);
-            
-            // Increment the message count (each user message and assistant reply are counted).
-            incrementMessageCount(2) // 1 for user message and 1 for assistant reply
-
-            // Mark objective as completed 
-            modifiedResponse = markComplete(response);
-
-            // Return the modified response
-            return modifiedResponse.trim();
         };
 
         // Marks the objectives as complete when objective no. appears in AI's message.
@@ -461,7 +462,7 @@
         function getMessageCount() {
             return messageCount;
         }
-        
+
         function getMessageLimit() {
             return messageLimit;
         }
@@ -481,33 +482,36 @@
 
         async function callLLM(provider, messages, options = {}) {
             if (getMessageCount() >= getMessageLimit()) {
-                    return "I'm sorry we have exceeded the message limit for this conversation. Let us stop the conversation here. Good Bye!";
-                }
+                return "I'm sorry we have exceeded the message limit for this conversation. Let us stop the conversation here. Good Bye!";
+            }
 
             try {
                 switch (provider.toLowerCase()) {
                     case 'mistral': {
-                        const apiKey = process.env.MISTRAL_API_KEY;
+                        const apiKey = fetch('/api/mconfig')
+                            .then(res => res.json())
+                            .then(data => data.secret);
                         const model = 'open-mistral-nemo'; // Or another Mistral model
                         return await callMistralAPI(apiKey, model, messages, options);
                     }
-                    case 'openai': {
-                        const apiKey = process.env.OPENROUTER_API_KEY;
-                        const model = 'gpt-3.5-turbo'; // Or another OpenAI model
-                        return await callOpenAIAPI(apiKey, model, messages, options);
-                    }
                     case 'gemini': {
-                        const apiKey = process.env.GEMINI_API_KEY;
+                        const apiKey = process.env.fetch('/api/gconfig')
+                            .then(res => res.json())
+                            .then(data => data.secret);
                         const model = 'gemini-2.0-flash'; // Or another Gemini model
                         return await callGeminiAPI(apiKey, model, messages, options);
                     }
                     case 'deepseek': {
-                        const apiKey = process.env.OPENROUTER_API_KEY;
+                        const apiKey = fetch('/api/orconfig')
+                            .then(res => res.json())
+                            .then(data => data.secret);
                         const model = 'deepseek/deepseek-r1:free'; // Or another model
                         return await callOpenRouterAPI(apiKey, model, messages, options);
                     }
                     case 'nemotron': {
-                        const apiKey = process.env.OPENROUTER_API_KEY;
+                        const apiKey = fetch('/api/orconfig')
+                            .then(res => res.json())
+                            .then(data => data.secret);
                         const model = 'nvidia/llama-3.1-nemotron-nano-8b-v1:free';
                         return await callOpenRouterAPI(apiKey, model, messages, options);
                     }
@@ -632,10 +636,10 @@
         }
 
         async function configureScenario(userMessage, userLanguage) {
-                // Add the system prompt only once at the beginning
-                if (getConversationLength === 0) {
-                    
-                    const scenarioInstructions = `
+            // Add the system prompt only once at the beginning
+            if (getConversationLength === 0) {
+
+                const scenarioInstructions = `
             **Core Task:** Simulate a friendly, conversational English tutor on a phone call with an Indian student whose native language is ${userLanguage}.
 
             **Primary Goal:** Guide the student to naturally and correctly ask the following four questions during the conversation. These are your key conversational objectives:
@@ -692,8 +696,8 @@
 
             **Start the conversation now by initiating the call.**
         `
-                    addMessageToConversation('system', scenarioInstructions);
-                }
+                addMessageToConversation('system', scenarioInstructions);
+            }
         }
 
     </script>
