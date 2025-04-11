@@ -485,7 +485,6 @@
                 return "I'm sorry we have exceeded the message limit for this conversation. Let us stop the conversation here. Good Bye!";
             }
 
-            let apiKey = ''; // Initialize apiKey variable
 
             try {
                 switch (provider.toLowerCase()) {
@@ -493,53 +492,57 @@
                         fetch('/api/mconfig')
                             .then(res => res.json())
                             .then(data => {
-                                apiKey = data.secret;
+                                const apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
+                                const model = 'open-mistral-nemo'; // Or another Mistral model
+                                return callMistralAPI(apiKey, model, messages, options);
                             })
                             .catch(err => {
                                 console.error('Fetch error:', err);
                             });
-                        const model = 'open-mistral-nemo'; // Or another Mistral model
-                        return await callMistralAPI(apiKey, model, messages, options);
+                       
                     }
                     case 'gemini': {
                         fetch('/api/gconfig')
                         .then(res => res.json())
                             .then(data => {
-                                apiKey = data.secret;
+                                const apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
+                                const model = 'gemini-2.0-flash'; // Or another Gemini model
+                                return callGeminiAPI(apiKey, model, messages, options);
                             })
                             .catch(err => {
                                 console.error('Fetch error:', err);
                             });
-                        const model = 'gemini-2.0-flash'; // Or another Gemini model
-                        return await callGeminiAPI(apiKey, model, messages, options);
+                       
                     }
                     case 'deepseek': {
                         fetch('/api/orconfig')
                         .then(res => res.json())
                             .then(data => {
-                                apiKey = data.secret;
+                                const apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
+                                const model = 'deepseek/deepseek-r1:free'; // Or another model
+                        return callOpenRouterAPI(apiKey, model, messages, options);
                             })
                             .catch(err => {
                                 console.error('Fetch error:', err);
                             });
-                        const model = 'deepseek/deepseek-r1:free'; // Or another model
-                        return await callOpenRouterAPI(apiKey, model, messages, options);
+                        
                     }
                     case 'nemotron': {
                         fetch('/api/orconfig')
                         .then(res => res.json())
                             .then(data => {
-                                apiKey = data.secret;
+                                const apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
+                                const model = 'nvidia/llama-3.1-nemotron-nano-8b-v1:free';
+                                return callOpenRouterAPI(apiKey, model, messages, options);
                             })
                             .catch(err => {
                                 console.error('Fetch error:', err);
                             });
-                        const model = 'nvidia/llama-3.1-nemotron-nano-8b-v1:free';
-                        return await callOpenRouterAPI(apiKey, model, messages, options);
+                        
                     }
                     default:
                         throw new Error(`Unsupported provider: ${provider}`);
