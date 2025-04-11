@@ -488,10 +488,10 @@
             try {
                 switch (provider.toLowerCase()) {
                     case 'mistral': {
-                        const apiKey = fetch('/api/mconfig')
+                        fetch('/api/mconfig')
                             .then(res => res.json())
                             .then(data => {
-                                apiKey = data.secret;
+                                const apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
                             })
                             .catch(err => {
@@ -501,10 +501,10 @@
                         return await callMistralAPI(apiKey, model, messages, options);
                     }
                     case 'gemini': {
-                        const apiKey = fetch('/api/gconfig')
+                        fetch('/api/gconfig')
                         .then(res => res.json())
                             .then(data => {
-                                apiKey = data.secret;
+                                const apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
                             })
                             .catch(err => {
@@ -514,10 +514,10 @@
                         return await callGeminiAPI(apiKey, model, messages, options);
                     }
                     case 'deepseek': {
-                        const apiKey = fetch('/api/orconfig')
+                        fetch('/api/orconfig')
                         .then(res => res.json())
                             .then(data => {
-                                apiKey = data.secret;
+                                const apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
                             })
                             .catch(err => {
@@ -527,10 +527,10 @@
                         return await callOpenRouterAPI(apiKey, model, messages, options);
                     }
                     case 'nemotron': {
-                        const apiKey = fetch('/api/orconfig')
+                        fetch('/api/orconfig')
                         .then(res => res.json())
                             .then(data => {
-                                apiKey = data.secret;
+                                const apiKey = data.secret;
                                 console.log("API Key:", apiKey); // Use it here
                             })
                             .catch(err => {
