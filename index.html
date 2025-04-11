@@ -495,7 +495,7 @@
                         return await callMistralAPI(apiKey, model, messages, options);
                     }
                     case 'gemini': {
-                        const apiKey = process.env.fetch('/api/gconfig')
+                        const apiKey = fetch('/api/gconfig')
                             .then(res => res.json())
                             .then(data => data.secret);
                         const model = 'gemini-2.0-flash'; // Or another Gemini model
