@@ -490,29 +490,52 @@
                     case 'mistral': {
                         const apiKey = fetch('/api/mconfig')
                             .then(res => res.json())
-                            .then(data => data.secret);
+                            .then(data => {
+                                apiKey = data.secret;
+                                console.log("API Key:", apiKey); // Use it here
+                            })
+                            .catch(err => {
+                                console.error('Fetch error:', err);
+                            });
                         const model = 'open-mistral-nemo'; // Or another Mistral model
                         return await callMistralAPI(apiKey, model, messages, options);
                     }
                     case 'gemini': {
                         const apiKey = fetch('/api/gconfig')
-                            .then(res => res.json())
-                            .then(data => data.secret);
-                        console.log("API Key:", apiKey)
+                        .then(res => res.json())
+                            .then(data => {
+                                apiKey = data.secret;
+                                console.log("API Key:", apiKey); // Use it here
+                            })
+                            .catch(err => {
+                                console.error('Fetch error:', err);
+                            });
                         const model = 'gemini-2.0-flash'; // Or another Gemini model
                         return await callGeminiAPI(apiKey, model, messages, options);
                     }
                     case 'deepseek': {
                         const apiKey = fetch('/api/orconfig')
-                            .then(res => res.json())
-                            .then(data => data.secret);
+                        .then(res => res.json())
+                            .then(data => {
+                                apiKey = data.secret;
+                                console.log("API Key:", apiKey); // Use it here
+                            })
+                            .catch(err => {
+                                console.error('Fetch error:', err);
+                            });
                         const model = 'deepseek/deepseek-r1:free'; // Or another model
                         return await callOpenRouterAPI(apiKey, model, messages, options);
                     }
                     case 'nemotron': {
                         const apiKey = fetch('/api/orconfig')
-                            .then(res => res.json())
-                            .then(data => data.secret);
+                        .then(res => res.json())
+                            .then(data => {
+                                apiKey = data.secret;
+                                console.log("API Key:", apiKey); // Use it here
+                            })
+                            .catch(err => {
+                                console.error('Fetch error:', err);
+                            });
                         const model = 'nvidia/llama-3.1-nemotron-nano-8b-v1:free';
                         return await callOpenRouterAPI(apiKey, model, messages, options);
                     }
