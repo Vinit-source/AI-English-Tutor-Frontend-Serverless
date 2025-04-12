@@ -496,7 +496,6 @@
                             }
                             const data = await response.json();
                             const apiKey = data.secret;
-                            console.log("API Key:", apiKey);
                             const model = 'open-mistral-nemo';
 
                             // Wait for callMistralAPI to complete and return its result.
@@ -516,7 +515,6 @@
                             }
                             const data = await response.json();
                             const apiKey = data.secret;
-                            console.log("API Key:", apiKey);
                             const model = 'gemini-2.0-flash';
 
                             // Wait for callGeminiAPI to complete and return its result.
@@ -536,7 +534,6 @@
                             }
                             const data = await response.json();
                             const apiKey = data.secret;
-                            console.log("API Key:", apiKey);
                             const model = 'deepseek/deepseek-r1:free';
                             return await callOpenRouterAPI(apiKey, model, messages, options); // Wait for callOpenRouterAPI to complete
                         } catch (err) {
@@ -552,7 +549,6 @@
                             }
                             const data = await response.json();
                             const apiKey = data.secret;
-                            console.log("API Key:", apiKey);
                             const model = 'nvidia/llama-3.1-nemotron-nano-8b-v1:free';
 
                             // Wait for callOpenRouterAPI to complete and return its result.
